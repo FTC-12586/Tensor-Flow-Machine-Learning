@@ -3,6 +3,7 @@ We are training a .tflite model for use on the rev hub, we are importing a provi
 
 Information:
   The architurture of the outputed .tflite model is: 
+  
   The data set layout is: "The datasets are downloaded as one or more zip files. The zip files contain TensorFlow record files."(https://community.ftclive.org/t/downloading-datasets/34)
   
 To do:
