@@ -14,7 +14,7 @@ from ImagePreprocess import ImagePreprocess
 class ImageGenerator(keras.utils.Sequence):
     # Generate Training Data In Batches
     def __init__(self, images, labels, path, n_classes, batch_size=32, dim=(240, 320, 3), augment=True, shuffle=True):
-        # Intialize Variables
+        # Initialize Variables
         self.image_preprocess = ImagePreprocess(dim, 'BGR')
         self.path = path
 
