@@ -1,5 +1,8 @@
 import sys
 
+def getRichardIn():
+   
+
 
 def main():
     sys.exit(0)
