@@ -1,7 +1,7 @@
 import sys
 
 def getRichardIn():
-   
+   return 0
 
 
 def main():
