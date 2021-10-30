@@ -15,5 +15,6 @@ To do:
 __To install Tensorflow, run these commands in the pycharm terminal window:__
   * conda create -n tf tensorflow
   * conda activate tf
-  * pip install opencv-python
-  * Then switch your interpreter to the conda/Python 3.9 (tf) option
+  * pip install opencv-python 
+
+Then switch your interpreter to the conda/Python 3.9 (tf) option
