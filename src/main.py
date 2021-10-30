@@ -1,10 +1,11 @@
 import sys
 
-def getRichardIn():
-   return 0
+from src.DatasetImporter import DatasetImporter
 
 
 def main():
+    DatasetImporter.load(r"C:\Users\willm\PycharmProjects\Tensor-Flow-Machine-Learning\datasetExamples"
+                         r"\exampleDownloadedDataset.zip")
     sys.exit(0)
 
 
