@@ -1,4 +1,4 @@
-# Tensor-Flow-Machine-Learning
+ # Tensor-Flow-Machine-Learning
 We are training a .tflite model for use on the rev hub, we are importing a provided data set from the ftc-ml online tool.
 
 Information:
@@ -16,5 +16,8 @@ __To install Tensorflow, run these commands in the pycharm terminal window:__
   * conda create -n tf tensorflow
   * conda activate tf
   * pip install opencv-python 
+  * pip install Pillow
 
 Then switch your interpreter to the conda/Python 3.9 (tf) option
+
+Maybe not this command: pip install --ignore-installed --upgrade tensorflow==2.5.0

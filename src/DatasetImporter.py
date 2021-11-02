@@ -1,9 +1,12 @@
-from zipfile import ZipFile, BadZipFile
-# import tensorflow as tf
 import io
+import os
+from zipfile import ZipFile
 
 
 class DatasetImporter:
+    @staticmethod
+    def _parse_record_file(file_contents: io.BytesIO)-> list:
+        pass
 
     @staticmethod
     def _parse_pbxt_file(file_contents: io.BytesIO) -> dict:
@@ -46,8 +49,27 @@ class DatasetImporter:
         return d
 
     @staticmethod
+    def _is_record_file(file_name: str) -> bool:
+        path, ext = os.path.splitext(file_name)
+        ext = ext.split('-')[0].strip()
+        if ext == '.record':
+            return True
+        return False
+
+    @staticmethod
+    def _is_pbxt(file_name: str)-> bool:
+        path, ext = os.path.splitext(file_name)
+        if ext == '.pbxt':
+            return True
+        return False
+
+    @staticmethod
     def load(file_name: str):
         z = ZipFile(file_name, 'r')
-        with z.open("label.pbtxt", 'r') as label_handle:
-            label_dictionary = DatasetImporter._parse_pbxt_file(label_handle)
-            # print(label_dictionary)
+        record_files= []
+        for file in z.filelist:
+            if DatasetImporter._is_pbxt(file.filename):
+                label = DatasetImporter._parse_pbxt_file(file)
+            elif DatasetImporter._is_record_file(file.filename):
+                record_files.append(DatasetImporter._parse_record_file(file))
+        z.close()

@@ -1,7 +1,6 @@
 import numpy as np
 import tensorflow.keras as keras
 import os
-import cv2
 from ImagePreprocess import ImagePreprocess
 
 
