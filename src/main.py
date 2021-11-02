@@ -4,8 +4,7 @@ from src.DatasetImporter import DatasetImporter
 
 
 def main():
-    DatasetImporter.load(r"C:\Users\willm\PycharmProjects\Tensor-Flow-Machine-Learning\datasetExamples"
-                         r"\exampleDownloadedDataset.zip")
+    DatasetImporter.load(r"..\datasetExamples\exampleDownloadedDataset.zip")
     sys.exit(0)
 
 

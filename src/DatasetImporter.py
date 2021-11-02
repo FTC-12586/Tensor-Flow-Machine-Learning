@@ -66,7 +66,7 @@ class DatasetImporter:
     @staticmethod
     def load(file_name: str):
         z = ZipFile(file_name, 'r')
-        record_files= []
+        record_files = []
         for file in z.filelist:
             if DatasetImporter._is_pbxt(file.filename):
                 label = DatasetImporter._parse_pbxt_file(file)
