@@ -1,5 +1,6 @@
-import tensorflow.keras.backend as K
 import tensorflow as tf
+import tensorflow.keras.backend as K
+
 
 class Yolo_Reshape(tf.keras.layers.Layer):
     def __init__(self, target_shape, num_classes, nb_boxes):
@@ -32,7 +33,7 @@ class Yolo_Reshape(tf.keras.layers.Layer):
         class_probs = K.reshape(input[:, :idx1], (K.shape(input)[0],) + tuple([S[0], S[1], C]))
         class_probs = K.softmax(class_probs)
 
-        #confidence
+        # confidence
         confs = K.reshape(input[:, idx1:idx2], (K.shape(input)[0],) + tuple([S[0], S[1], B]))
         confs = K.sigmoid(confs)
 

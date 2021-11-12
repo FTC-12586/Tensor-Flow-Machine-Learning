@@ -1,7 +1,8 @@
 import os
+
 import cv2
-import tensorflow as tf
 import numpy as np
+import tensorflow as tf
 
 
 class DatasetImporter:
@@ -72,7 +73,6 @@ class DatasetImporter:
 
         return output_tensor
 
-    # TODO Make this function return something useful
     @staticmethod
     def _parse_record_file(filename: str):
 

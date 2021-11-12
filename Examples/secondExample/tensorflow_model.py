@@ -16,5 +16,4 @@ all_layers_details = interpreter.get_tensor_details()
 print("Input Shape: {}".format(input_details[0]['shape']))
 print("Output Shape: {}".format(output_details[0]['shape']))
 
-
 # Based on this I believe this model is an SSD Mobile Net V2 Architecture

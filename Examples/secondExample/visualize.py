@@ -24,6 +24,7 @@ import json
 import os
 import re
 import sys
+
 import numpy as np
 
 # pylint: disable=g-import-not-at-top

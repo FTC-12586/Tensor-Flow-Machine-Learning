@@ -1,6 +1,8 @@
+import os
+
 import numpy as np
 import tensorflow.keras as keras
-import os
+
 from ImagePreprocess import ImagePreprocess
 
 

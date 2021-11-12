@@ -2,7 +2,6 @@ import cv2
 import numpy as np
 
 
-
 # Assignment #3, Problem 1
 # Solution Manual
 # Rod Dockter - ME 5286
