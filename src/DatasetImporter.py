@@ -1,7 +1,5 @@
-import io
 import os
 import cv2
-from zipfile import ZipFile
 import tensorflow as tf
 import numpy as np
 
@@ -22,7 +20,6 @@ class DatasetImporter:
         'image/encoded': tf.io.FixedLenFeature([], tf.string),
     }
 
-    # tf.io.parse_single_example(example_proto, feature_description)
     @staticmethod
     def _parse_dataset_function(example_proto):
         # Parse the input tf.train.Example proto using the dictionary above.
@@ -75,16 +72,15 @@ class DatasetImporter:
 
         return output_tensor
 
+    # TODO Make this function return something useful
     @staticmethod
     def _parse_record_file(filename: str):
 
         raw_dataset = tf.data.TFRecordDataset([filename])
-        breakpoint()
 
-        parsed_dataset = raw_dataset.take(12).map(DatasetImporter._parse_dataset_function)
+        parsed_dataset = raw_dataset.map(DatasetImporter._parse_dataset_function)
 
-
-
+        listOfDatasetDictionaries = []
         # Sample load of 10 features
         for parsed_data in parsed_dataset:
             # Load bounding box and label info
@@ -92,19 +88,25 @@ class DatasetImporter:
 
             output_tensor = DatasetImporter.convert_to_yolo_output(ul, br, label)
 
-            breakpoint()
-
             image = DatasetImporter.load_record_image(parsed_data)
 
             # Convert bounding box to pixel values for ploting
-            ul_px = (ul * np.array([image.shape[1], image.shape[0]])).astype(np.int32)
-            br_px = (br * np.array([image.shape[1], image.shape[0]])).astype(np.int32)
-            cv2.rectangle(image, ul_px, br_px, (255, 0, 0), 2)
+            # ul_px = (ul * np.array([image.shape[1], image.shape[0]])).astype(np.int32)
+            # br_px = (br * np.array([image.shape[1], image.shape[0]])).astype(np.int32)
+            # cv2.rectangle(image, ul_px, br_px, (255, 0, 0), 2)
 
             image = DatasetImporter.ResizeCrop(image, [448, 448, 3])
+            data = {
+                "upper_left_bbx": ul,
+                "bottom_right_bbx": br,
+                "output_tensor": output_tensor,
+                "image": image
+            }
+            listOfDatasetDictionaries.append(data)
 
-            cv2.imshow("tf", image)
-            cv2.waitKey(0)
+            # cv2.imshow("tf", image)
+            # cv2.waitKey(0)
+        return listOfDatasetDictionaries
 
     @staticmethod
     def ResizeCrop(img, dim_out):
@@ -139,10 +141,10 @@ class DatasetImporter:
         return output
 
     @staticmethod
-    def _parse_pbtxt_file(filename:str) -> dict:
+    def _parse_pbtxt_file(filename: str) -> dict:
         # reads in the data from the file object as a string
-        with open(filename,'r') as f:
-            data = f.read().decode()
+        with open(filename, 'r') as f:
+            data = f.read()
 
         # splits the data into sections
         data = data.split('\n')
@@ -189,31 +191,42 @@ class DatasetImporter:
 
     @staticmethod
     def _is_pbtxt(file_name: str) -> bool:
-        path, ext = os.path.splitext(file_name)
-        ext = str(ext)
-        ext = ext.strip()
-        ext = ext.strip("'")
-        if ext == '.pbtxt' or ext == "'.pbtxt'" or ext == ".pbtxt":
-            return True
-        return False
+        try:
+            path, ext = os.path.splitext(file_name)
+            ext = str(ext)
+            ext = ext.strip()
+            ext = ext.strip("'")
+            if ext == '.pbtxt' or ext == "'.pbtxt'" or ext == ".pbtxt":
+                return True
+            return False
+        except ValueError:
+            return False
 
     @staticmethod
     def absoluteFilePaths(directory):
         for dirpath, _, filenames in os.walk(directory):
             for f in filenames:
-                yield os.path.abspath(os.path.join(dirpath, f))
+                tmp = os.path.abspath(os.path.join(dirpath, f))
+                yield tmp
 
     @staticmethod
-    def load(folder_name: str):
+    def load(folder_name: str) -> tuple:
+        folder_name = os.path.abspath(folder_name)
 
-        record_files = [file for file in DatasetImporter.absoluteFilePaths(folder_name)]
-        for file in record_files:
+        folder_files = [file for file in DatasetImporter.absoluteFilePaths(folder_name)]
+        record_datasets = []
+        print(folder_files)
+        for file in folder_files:
             if DatasetImporter._is_pbtxt(file):
                 label = DatasetImporter._parse_pbtxt_file(file)
                 print("parsed .pbtxt")
+                continue
+
             elif DatasetImporter._is_record_file(file):
-                record_files.append(DatasetImporter._parse_record_file(file))
+                record_datasets.append(DatasetImporter._parse_record_file(file))
+                continue
             else:
                 # sanity check on the file
-                breakpoint()
+                # breakpoint()
                 raise ValueError("The File is Malformed")
+        return record_datasets, label

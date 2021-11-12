@@ -2,7 +2,7 @@ import tensorflow as tf
 
 # Load TFLite model and allocate tensors.
 
-path = r".\data\FreightFrenzy_BC (1).tflite"
+path = r"data/FreightFrenzy_BC (1).tflite"
 interpreter = tf.lite.Interpreter(model_path=path)
 interpreter.allocate_tensors()
 

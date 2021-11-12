@@ -4,7 +4,9 @@ from src.DatasetImporter import DatasetImporter
 
 
 def main():
-    DatasetImporter.load(r"..\datasetExamples\Dataset1")
+    sets = DatasetImporter.load(r"..\datasetExamples\Dataset1")
+    #print([x for x in DatasetImporter.absoluteFilePaths(r"..\datasetExamples\Dataset1")])
+    print(sets)
     sys.exit(0)
 
 
