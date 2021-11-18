@@ -63,7 +63,7 @@ class YOLOV1:
                            mcp_save
                        ])
 
-    def create_model(self, num_classes=20, nb_boxes=1):
+    def create_model(self, num_classes=20, nb_boxes=2):
         self.num_classes = num_classes
         self.nb_boxes = nb_boxes
 

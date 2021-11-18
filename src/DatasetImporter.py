@@ -103,10 +103,41 @@ class DatasetImporter:
                 "image": image
             }
             listOfDatasetDictionaries.append(data)
-
-            # cv2.imshow("tf", image)
-            # cv2.waitKey(0)
         return listOfDatasetDictionaries
+
+    @staticmethod
+    def cv_size(img):
+        return tuple(img.shape[1::-1])
+
+    @staticmethod
+    def ResizeFill(Img: np.ndarray) -> np.ndarray:
+
+        width, height = DatasetImporter.cv_size(Img)
+        m = 480 / width
+        width = int(width * m)
+        height = int(height * m)
+        if height % 2 != 0:
+            height = height + 1
+        resized = cv2.resize(Img, (width, height))
+
+        width, height = DatasetImporter.cv_size(resized)
+        assert width == 480
+        assert height <= 480
+
+        bordersize = int((480 - height) / 2)
+
+        resized = cv2.copyMakeBorder(
+            resized,
+            top=bordersize,
+            bottom=bordersize,
+            left=0,
+            right=0,
+            borderType=cv2.BORDER_CONSTANT
+        )
+
+        width, height = DatasetImporter.cv_size(resized)
+        assert width == height == 480
+        return resized
 
     @staticmethod
     def ResizeCrop(img, dim_out):
@@ -210,7 +241,7 @@ class DatasetImporter:
                 yield tmp
 
     @staticmethod
-    def load(folder_name: str) -> tuple:
+    def load(folder_name: str) -> list:
         folder_name = os.path.abspath(folder_name)
 
         folder_files = [file for file in DatasetImporter.absoluteFilePaths(folder_name)]
@@ -229,4 +260,4 @@ class DatasetImporter:
                 # sanity check on the file
                 # breakpoint()
                 raise ValueError("The File is Malformed")
-        return record_datasets, label
+        return [record_datasets, label]

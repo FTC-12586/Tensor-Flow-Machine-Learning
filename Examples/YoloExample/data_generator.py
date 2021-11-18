@@ -24,7 +24,7 @@ class DataGenerator(keras.utils.Sequence):
 
         self.labels = read_label_map(labelfile)
 
-        if (self.totalsamples < self.batch_size):
+        if self.totalsamples < self.batch_size:
             self.batch_size = self.totalsamples
             print("Reducing Batch Size to {}".format(self.batch_size))
 
@@ -92,7 +92,7 @@ class DataGenerator(keras.utils.Sequence):
 
         # determine which ratio to use
         ratio = ratio_width
-        if (abs(1.0 - ratio_height) < abs(1.0 - ratio_width)):
+        if abs(1.0 - ratio_height) < abs(1.0 - ratio_width):
             ratio = ratio_height
 
         # scaled the image
@@ -105,7 +105,7 @@ class DataGenerator(keras.utils.Sequence):
         offset = np.array([shiftx, shifty])
 
         output = np.zeros((dim_out[0], dim_out[1], 3), np.uint8)
-        if (shiftx < 0 or shifty < 0):
+        if shiftx < 0 or shifty < 0:
             # fill black
             shiftx = abs(shiftx)
             shifty = abs(shifty)
@@ -124,7 +124,7 @@ class DataGenerator(keras.utils.Sequence):
 
     def convert_to_yolo_output(self, ul, br, label):
         output_tensor = np.zeros(self.output_dims)
-        if (ul is None or br is None or label is None):
+        if ul is None or br is None or label is None:
             return output_tensor  # Empty
 
         center = (ul + br) / 2.0
@@ -132,7 +132,7 @@ class DataGenerator(keras.utils.Sequence):
         center_grid = center * np.array(self.output_dims[0:2])
         coords = center_grid.astype(np.int32)
 
-        classes = np.zeros((self.num_classes))
+        classes = np.zeros(self.num_classes)
         classes[label] = 1.0
 
         output_tensor[coords[1], coords[0], 0:2] = center_grid - coords

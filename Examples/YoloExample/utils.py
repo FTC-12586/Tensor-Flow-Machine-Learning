@@ -55,7 +55,7 @@ def DecodeYoloOutput(output, threshold=0.6, nb_boxes=1):
                 wh = vec[7:9]
                 ul = xy - wh / 2.0
                 br = xy + wh / 2.0
-                class_label = np.argmax(vev[class_offset:])
+                class_label = np.argmax(vec[class_offset:])
                 results.append({'class': class_index, 'ul': ul, 'br': br})
 
     return results
