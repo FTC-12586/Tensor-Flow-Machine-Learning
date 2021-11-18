@@ -22,16 +22,16 @@ class DatasetImporter:
     }
 
     @staticmethod
-    def _parse_dataset_function(example_proto):
+    def _parse_dataset_function(example_proto) -> dict:
         # Parse the input tf.train.Example proto using the dictionary above.
         return tf.io.parse_single_example(example_proto, DatasetImporter.feature_description)
 
     @staticmethod
-    def get_dataset_size(recordfile):
+    def get_dataset_size(recordfile) -> int:
         return sum(1 for _ in tf.data.TFRecordDataset(recordfile))
 
     @staticmethod
-    def load_record_image(parsed_data):
+    def load_record_image(parsed_data) -> np.ndarray:
         # Get dimensions
         raw_height = tf.cast(parsed_data['image/height'], tf.int32).numpy()
         raw_width = tf.cast(parsed_data['image/width'], tf.int32).numpy()
@@ -42,7 +42,7 @@ class DatasetImporter:
         return image_raw.reshape((raw_height, raw_width, 3))
 
     @staticmethod
-    def load_record_label(parsed_data):
+    def load_record_label(parsed_data) -> tuple:
         box_xmin = tf.cast(parsed_data['image/object/bbox/xmin'], tf.float32).numpy()
         box_xmax = tf.cast(parsed_data['image/object/bbox/xmax'], tf.float32).numpy()
         box_ymin = tf.cast(parsed_data['image/object/bbox/ymin'], tf.float32).numpy()
@@ -53,7 +53,7 @@ class DatasetImporter:
         return ul, br, label
 
     @staticmethod
-    def convert_to_yolo_output(ul, br, label):
+    def convert_to_yolo_output(ul, br, label)-> np.ndarray:
         output_tensor = np.zeros((7, 7, 25))
         center = (ul + br) / 2.0
         print(center)
@@ -74,7 +74,7 @@ class DatasetImporter:
         return output_tensor
 
     @staticmethod
-    def _parse_record_file(filename: str):
+    def _parse_record_file(filename: str) -> dict:
 
         raw_dataset = tf.data.TFRecordDataset([filename])
 
@@ -90,12 +90,7 @@ class DatasetImporter:
 
             image = DatasetImporter.load_record_image(parsed_data)
 
-            # Convert bounding box to pixel values for ploting
-            # ul_px = (ul * np.array([image.shape[1], image.shape[0]])).astype(np.int32)
-            # br_px = (br * np.array([image.shape[1], image.shape[0]])).astype(np.int32)
-            # cv2.rectangle(image, ul_px, br_px, (255, 0, 0), 2)
-
-            image = DatasetImporter.ResizeCrop(image, [448, 448, 3])
+            image = DatasetImporter.ResizeFill(image)
             data = {
                 "upper_left_bbx": ul,
                 "bottom_right_bbx": br,
@@ -106,7 +101,7 @@ class DatasetImporter:
         return listOfDatasetDictionaries
 
     @staticmethod
-    def cv_size(img):
+    def cv_size(img) -> tuple:
         return tuple(img.shape[1::-1])
 
     @staticmethod
@@ -140,7 +135,7 @@ class DatasetImporter:
         return resized
 
     @staticmethod
-    def ResizeCrop(img, dim_out):
+    def ResizeCrop(img, dim_out) -> np.ndarray:
         dim_img = img.shape
 
         ratio_height = dim_out[0] / dim_img[0]
@@ -234,14 +229,25 @@ class DatasetImporter:
             return False
 
     @staticmethod
-    def absoluteFilePaths(directory):
+    def absoluteFilePaths(directory) -> list:
         for dirpath, _, filenames in os.walk(directory):
             for f in filenames:
                 tmp = os.path.abspath(os.path.join(dirpath, f))
                 yield tmp
 
     @staticmethod
-    def load(folder_name: str) -> list:
+    def loadFile(fileName: str) -> dict:
+        fileName = os.path.abspath(fileName)
+        if DatasetImporter._is_pbtxt(fileName):
+            try:
+                return DatasetImporter._parse_pbtxt_file(fileName)
+            except Exception as e:
+                pass
+
+        return DatasetImporter._parse_dataset_function(fileName)
+
+    @staticmethod
+    def loadFolder(folder_name: str) -> list:
         folder_name = os.path.abspath(folder_name)
 
         folder_files = [file for file in DatasetImporter.absoluteFilePaths(folder_name)]
@@ -258,6 +264,5 @@ class DatasetImporter:
                 continue
             else:
                 # sanity check on the file
-                # breakpoint()
                 raise ValueError("The File is Malformed")
         return [record_datasets, label]

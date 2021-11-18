@@ -4,7 +4,8 @@ import cv2
 
 
 def main():
-    sets, labels = DatasetImporter.load(r"..\datasetExamples\Dataset1")
+    #DatasetImporter.loadFile(r"datasetExamples/Dataset1/train_dataset.record-00000-00001")
+    DatasetImporter.loadFolder(r"datasetExamples/Dataset1")
     breakpoint()
     im = cv2.imread(r"C:\Users\willm\Downloads\Calc 11.png")
     im = DatasetImporter.ResizeFill(im)

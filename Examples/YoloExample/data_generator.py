@@ -83,6 +83,38 @@ class DataGenerator(keras.utils.Sequence):
             return None, None, None
         return ul, br, label
 
+    @staticmethod
+    def ResizeFill(Img: np.ndarray) -> np.ndarray:
+
+        cv_size = lambda img: tuple(img.shape[1::-1])
+
+        width, height = cv_size(Img)
+        m = 480 / width
+        width = int(width * m)
+        height = int(height * m)
+        if height % 2 != 0:
+            height = height + 1
+        resized = cv2.resize(Img, (width, height))
+
+        width, height = cv_size(resized)
+        assert width == 480
+        assert height <= 480
+
+        bordersize = int((480 - height) / 2)
+
+        resized = cv2.copyMakeBorder(
+            resized,
+            top=bordersize,
+            bottom=bordersize,
+            left=0,
+            right=0,
+            borderType=cv2.BORDER_CONSTANT
+        )
+
+        width, height = cv_size(resized)
+        assert width == height == 480
+        return resized
+
     # resize an image while maintaining aspect ratios
     def ResizeCrop(self, img, dim_out, ul, br):
         dim_img = img.shape

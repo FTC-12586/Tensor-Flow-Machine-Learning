@@ -8,12 +8,12 @@ num_classes = 1
 nb_boxes = 1
 output_len = num_classes + (5 * nb_boxes)
 
-## YOLO Model
+# YOLO Model
 yolo = YOLOV1()
 model = yolo.create_model(num_classes=num_classes)
 yolo.display_model()
 
-## Data Generators
+# Data Generators
 trainrecord = "../../datasetExamples/Dataset1/train_dataset.record-00000-00001"
 evalrecord = "../../datasetExamples/Dataset1/eval_dataset.record-00000-00001"
 labelfile = "../../datasetExamples/Dataset1/label.pbtxt"
@@ -28,7 +28,7 @@ x_train, y_train = train_generator.__getitem__(0)
 print("Input Shape: {}".format(x_train.shape))
 print("Output Shape: {}".format(y_train.shape))
 
-## Train the model
+# Train the model
 # train(self, train_generator, eval_generator, epochs=135, weights_file='weight.hdf5'):
 yolo.train(train_generator, eval_generator, epochs=135, weights_file='weight.hdf5')
 
