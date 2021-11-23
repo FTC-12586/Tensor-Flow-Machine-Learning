@@ -39,7 +39,7 @@ def DecodeYoloOutput(output, threshold=0.6, nb_boxes=1):
     for yy in range(out_shape[0]):
         for xx in range(out_shape[1]):
             vec = output[yy, xx, :]
-            if (vec[4] > threshold):
+            if vec[4] > threshold:
                 # Center X,Y
                 xy = (vec[0:2] + np.array([xx, yy])) / out_shape[0:2]
                 # Width, Height
@@ -48,7 +48,7 @@ def DecodeYoloOutput(output, threshold=0.6, nb_boxes=1):
                 br = xy + wh / 2.0
                 class_index = np.argmax(vec[class_offset:])
                 results.append({'class': class_index, 'ul': ul, 'br': br})
-            elif (nb_boxes > 1 and vec[9] > threshold):
+            elif nb_boxes > 1 and vec[9] > threshold:
                 # Center X,Y
                 xy = (vec[5:7] + np.array([xx, yy])) / out_shape[0:2]
                 # Width, Height

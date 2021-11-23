@@ -110,7 +110,6 @@ class DataGenerator(keras.utils.Sequence):
             right=0,
             borderType=cv2.BORDER_CONSTANT
         )
-
         width, height = cv_size(resized)
         assert width == height == 480
         return resized

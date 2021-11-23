@@ -134,4 +134,8 @@ def load_dataset(filename):
 
 
 # Set to the record file location
-load_dataset(r"data/eval_dataset.record-00000-00001")
+def main():
+    load_dataset(r"../../datasetExamples/Dataset1/train_dataset.record-00000-00001")
+
+if __name__ == "__main__":
+    main()
