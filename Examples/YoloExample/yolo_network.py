@@ -1,13 +1,15 @@
 import tensorflow as tf
-from tensorflow.keras.callbacks import ModelCheckpoint
-from tensorflow.keras.layers import Conv2D, MaxPooling2D, Lambda, InputLayer
-from tensorflow.keras.layers import Dense, Dropout, Flatten
-from tensorflow.keras.models import Sequential
-from tensorflow.keras.regularizers import l2
+import numpy as np
 
-from learning_rate import LearningRateScheduler
+from tensorflow.keras.models import Sequential
+from tensorflow.keras.layers import Dense, InputLayer, Dropout, Flatten, Reshape
+from tensorflow.keras.layers import Conv2D, MaxPooling2D, GlobalMaxPooling2D, Lambda, InputLayer
+from tensorflow.keras.regularizers import l2
+from tensorflow.keras.callbacks import ModelCheckpoint
+
 from utils import YOLO_Loss
 from yolo_reshape import Yolo_Reshape
+from learning_rate import LearningRateScheduler
 
 
 class YOLOV1:
@@ -45,6 +47,9 @@ class YOLOV1:
         return lr
 
     def inference(self, input):
+        if (len(input.shape) == 3):
+            # Add in a single ddimension to match network shape [None, 448, 448, 3]
+            return self.model.predict(input[None])
         return self.model.predict(input)
 
     def train(self, train_generator, eval_generator, epochs=135, weights_file='weight.hdf5'):
@@ -63,9 +68,8 @@ class YOLOV1:
                            mcp_save
                        ])
 
-    def create_model(self, num_classes=20, nb_boxes=2):
+    def create_model(self, num_classes=20):
         self.num_classes = num_classes
-        self.nb_boxes = nb_boxes
 
         lrelu = tf.keras.layers.LeakyReLU(alpha=0.1)
 
@@ -135,12 +139,11 @@ class YOLOV1:
         self.model.add(Dropout(0.5))
 
         # 7x7xn output
-        outlen = (self.nb_boxes * 5) + num_classes  # 20 + 2*5 = 30
+        outlen = 10 + num_classes  # 20 + 2*5 = 30
         denselen = self.grid_w * self.grid_h * outlen  # 7x7x30 = 1470
 
         self.model.add(Dense(denselen, activation='sigmoid'))
-        self.model.add(Yolo_Reshape(target_shape=(self.grid_w, self.grid_h, outlen), num_classes=self.num_classes,
-                                    nb_boxes=self.nb_boxes))
+        self.model.add(Yolo_Reshape(target_shape=(self.grid_w, self.grid_h, outlen), num_classes=self.num_classes))
 
         self.yolo_loss = YOLO_Loss(num_classes)
         self.model.compile(loss=self.yolo_loss.yolo_loss, optimizer='adam')

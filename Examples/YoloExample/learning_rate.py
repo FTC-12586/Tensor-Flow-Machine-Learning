@@ -1,6 +1,5 @@
-import tensorflow as tf
 from tensorflow import keras
-
+import tensorflow as tf
 
 class LearningRateScheduler(keras.callbacks.Callback):
     """Learning rate scheduler which sets the learning rate according to schedule.

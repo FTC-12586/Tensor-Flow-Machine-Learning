@@ -1,22 +1,20 @@
-import cv2
-import numpy as np
-import tensorflow as tf
 from tensorflow import keras
+import tensorflow as tf
+import numpy as np
+import cv2
 
 from utils import read_label_map
 
 
 class DataGenerator(keras.utils.Sequence):
 
-    def __init__(self, recordfile, labelfile, image_dims=[448, 448, 3], output_dims=[7, 7, 30], num_classes=20,
-                 nb_boxes=1, batch_size=20):
+    def __init__(self, recordfile, labelfile, image_dims=[448, 448, 3], num_classes=20, batch_size=20):
         self.recordfile = recordfile
         self.labelfile = labelfile
 
         self.image_dims = image_dims
-        self.output_dims = output_dims
+        self.output_dims = [7, 7, num_classes + 5]
         self.num_classes = num_classes
-        self.nb_boxes = nb_boxes
         self.batch_size = batch_size
 
         self.raw_dataset = tf.data.TFRecordDataset(recordfile)
@@ -24,7 +22,7 @@ class DataGenerator(keras.utils.Sequence):
 
         self.labels = read_label_map(labelfile)
 
-        if self.totalsamples < self.batch_size:
+        if (self.totalsamples < self.batch_size):
             self.batch_size = self.totalsamples
             print("Reducing Batch Size to {}".format(self.batch_size))
 
@@ -83,37 +81,6 @@ class DataGenerator(keras.utils.Sequence):
             return None, None, None
         return ul, br, label
 
-    @staticmethod
-    def ResizeFill(Img: np.ndarray) -> np.ndarray:
-
-        cv_size = lambda img: tuple(img.shape[1::-1])
-
-        width, height = cv_size(Img)
-        m = 480 / width
-        width = int(width * m)
-        height = int(height * m)
-        if height % 2 != 0:
-            height = height + 1
-        resized = cv2.resize(Img, (width, height))
-
-        width, height = cv_size(resized)
-        assert width == 480
-        assert height <= 480
-
-        bordersize = int((480 - height) / 2)
-
-        resized = cv2.copyMakeBorder(
-            resized,
-            top=bordersize,
-            bottom=bordersize,
-            left=0,
-            right=0,
-            borderType=cv2.BORDER_CONSTANT
-        )
-        width, height = cv_size(resized)
-        assert width == height == 480
-        return resized
-
     # resize an image while maintaining aspect ratios
     def ResizeCrop(self, img, dim_out, ul, br):
         dim_img = img.shape
@@ -123,7 +90,7 @@ class DataGenerator(keras.utils.Sequence):
 
         # determine which ratio to use
         ratio = ratio_width
-        if abs(1.0 - ratio_height) < abs(1.0 - ratio_width):
+        if (abs(1.0 - ratio_height) < abs(1.0 - ratio_width)):
             ratio = ratio_height
 
         # scaled the image
@@ -136,7 +103,7 @@ class DataGenerator(keras.utils.Sequence):
         offset = np.array([shiftx, shifty])
 
         output = np.zeros((dim_out[0], dim_out[1], 3), np.uint8)
-        if shiftx < 0 or shifty < 0:
+        if (shiftx < 0 or shifty < 0):
             # fill black
             shiftx = abs(shiftx)
             shifty = abs(shifty)
@@ -155,7 +122,7 @@ class DataGenerator(keras.utils.Sequence):
 
     def convert_to_yolo_output(self, ul, br, label):
         output_tensor = np.zeros(self.output_dims)
-        if ul is None or br is None or label is None:
+        if (ul is None or br is None or label is None):
             return output_tensor  # Empty
 
         center = (ul + br) / 2.0
@@ -163,15 +130,18 @@ class DataGenerator(keras.utils.Sequence):
         center_grid = center * np.array(self.output_dims[0:2])
         coords = center_grid.astype(np.int32)
 
-        classes = np.zeros(self.num_classes)
+        classes = np.zeros((self.num_classes))
         classes[label] = 1.0
 
-        output_tensor[coords[1], coords[0], 0:2] = center_grid - coords
+        class_offset = self.num_classes
+        box_offset = class_offset + 4
 
-        output_tensor[coords[1], coords[0], 2:4] = br - ul
-        output_tensor[coords[1], coords[0], 4] = 1.0
+        # [classes, boxes <4>, confidences <1>]
 
-        output_tensor[coords[1], coords[0], 5:(self.num_classes + 5)] = classes
+        output_tensor[coords[1], coords[0], 0:class_offset] = classes
+
+        output_tensor[coords[1], coords[0], class_offset:box_offset] = np.concatenate((center_grid - coords, br - ul))
+        output_tensor[coords[1], coords[0], box_offset] = 1.0
 
         return output_tensor
 
@@ -181,7 +151,7 @@ class DataGenerator(keras.utils.Sequence):
         labels = np.empty((self.batch_size, *self.output_dims))
 
         # Apply feature_description dictionary
-        parsed_dataset = self.raw_dataset.take(self.batch_size).map(self._parse_dataset_function)
+        parsed_dataset = self.raw_dataset.take(10).map(self._parse_dataset_function)
 
         # Sample load of 10 features
         for ii, parsed_data in enumerate(parsed_dataset):

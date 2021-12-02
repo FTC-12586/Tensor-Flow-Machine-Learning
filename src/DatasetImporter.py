@@ -53,7 +53,7 @@ class DatasetImporter:
         return ul, br, label
 
     @staticmethod
-    def convert_to_yolo_output(ul, br, label)-> np.ndarray:
+    def convert_to_yolo_output(ul, br, label) -> np.ndarray:
         output_tensor = np.zeros((7, 7, 25))
         center = (ul + br) / 2.0
         print(center)
@@ -105,10 +105,12 @@ class DatasetImporter:
         return tuple(img.shape[1::-1])
 
     @staticmethod
-    def ResizeFill(Img: np.ndarray) -> np.ndarray:
+    def ResizeFill(Img: np.ndarray, dim_out, ul, br) -> tuple:
 
+        wantedWidth = dim_out[0]
+        wantedHeight = dim_out[1]
         width, height = DatasetImporter.cv_size(Img)
-        m = 480 / width
+        m = wantedWidth / width
         width = int(width * m)
         height = int(height * m)
         if height % 2 != 0:
@@ -116,10 +118,12 @@ class DatasetImporter:
         resized = cv2.resize(Img, (width, height))
 
         width, height = DatasetImporter.cv_size(resized)
-        assert width == 480
-        assert height <= 480
+        assert width == wantedWidth
+        assert height <= wantedHeight
 
-        bordersize = int((480 - height) / 2)
+        bordersize = int((wantedHeight - height) / 2)
+
+        assert bordersize > 0
 
         resized = cv2.copyMakeBorder(
             resized,
@@ -131,40 +135,33 @@ class DatasetImporter:
         )
 
         width, height = DatasetImporter.cv_size(resized)
-        assert width == height == 480
-        return resized
+        assert width == height == wantedWidth
+
+        new_bbox_x1 = ul[0] * m
+        new_bbox_y1 = (ul[1] * m) + bordersize
+        new_bbox_x2 = br[0] * m
+        new_bbox_y2 = (br[1] * m) + bordersize
+
+        return resized, np.array([new_bbox_x1, new_bbox_y1], dtype=float), np.array([new_bbox_x2, new_bbox_y2],
+                                                                                    dtype=float)
 
     @staticmethod
-    def ResizeCrop(img, dim_out) -> np.ndarray:
-        dim_img = img.shape
+    def resize_bbox(Img: np.ndarray, dim_out, ul, br):
+        wantedWidth = dim_out[0]
+        wantedHeight = dim_out[1]
 
-        ratio_height = dim_out[0] / dim_img[0]
-        ratio_width = dim_out[1] / dim_img[1]
+        width, height = DatasetImporter.cv_size(Img)
 
-        # determine which ratio to use
-        ratio = ratio_width
-        if abs(1.0 - ratio_height) < abs(1.0 - ratio_width):
-            ratio = ratio_height
+        m = wantedWidth / width
 
-        # scaled the image
-        scaled = cv2.resize(img, dsize=(0, 0), fx=ratio, fy=ratio)
-        dim_scaled = scaled.shape
+        bordersize = int((wantedHeight - height) / 2)
 
-        # determine offsets (one of these will be 0)
-        shiftx = int((dim_scaled[1] - dim_out[1]) / 2)
-        shifty = int((dim_scaled[0] - dim_out[0]) / 2)
+        new_bbox_x1 = ul[0] * m
+        new_bbox_y1 = (ul[1] * m) + bordersize
+        new_bbox_x2 = br[0] * m
+        new_bbox_y2 = (br[1] * m) + bordersize
 
-        output = np.zeros((dim_out[0], dim_out[1], 3), np.uint8)
-        if shiftx < 0 or shifty < 0:
-            # fill black
-            shiftx = abs(shiftx)
-            shifty = abs(shifty)
-            output[shifty:(shifty + dim_scaled[0]), shiftx:(shiftx + dim_scaled[1]), :] = scaled
-        else:
-            # crop
-            output = scaled[shifty:(shifty + dim_out[0]), shiftx:(shiftx + dim_out[1]), :]
-
-        return output
+        return np.array([new_bbox_x1, new_bbox_y1], dtype=float), np.array([new_bbox_x2, new_bbox_y2], dtype=float)
 
     @staticmethod
     def _parse_pbtxt_file(filename: str) -> dict:

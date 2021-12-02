@@ -1,6 +1,6 @@
-import cv2
-import numpy as np
 import tensorflow.keras.backend as K
+import numpy as np
+import cv2
 
 
 # Convert pbtxt file into dictionary
@@ -29,33 +29,45 @@ def read_label_map(label_map_path):
     return items
 
 
-def DecodeYoloOutput(output, threshold=0.6, nb_boxes=1):
+def DecodeYoloOutput(output, threshold=0.6):
+    if len(output.shape) == 4:
+        # Get first element in output
+        output = output[0]
     out_shape = output.shape
     grid_shape = out_shape[0:2]
-    class_offset = nb_boxes * 5
+
+    # [classes, confidences <2>, boxes <8>]
+    num_classes = out_shape[-1] - 10
+    class_offset = num_classes
+    trust_offset = class_offset + 2
 
     results = []  # list of labels and bounding boxes
 
     for yy in range(out_shape[0]):
         for xx in range(out_shape[1]):
             vec = output[yy, xx, :]
-            if vec[4] > threshold:
+
+            classes = vec[0:class_offset]
+            confidences = vec[class_offset:trust_offset]
+            boxes = vec[trust_offset:]
+
+            if (confidences[0] > threshold):
                 # Center X,Y
-                xy = (vec[0:2] + np.array([xx, yy])) / out_shape[0:2]
+                xy = (boxes[0:2] + np.array([xx, yy])) / out_shape[0:2]
                 # Width, Height
-                wh = vec[2:4]
+                wh = boxes[2:4]
                 ul = xy - wh / 2.0
                 br = xy + wh / 2.0
-                class_index = np.argmax(vec[class_offset:])
+                class_index = np.argmax(classes)
                 results.append({'class': class_index, 'ul': ul, 'br': br})
-            elif nb_boxes > 1 and vec[9] > threshold:
+            elif (confidences[1] > threshold):
                 # Center X,Y
-                xy = (vec[5:7] + np.array([xx, yy])) / out_shape[0:2]
+                xy = (boxes[4:6] + np.array([xx, yy])) / out_shape[0:2]
                 # Width, Height
-                wh = vec[7:9]
+                wh = boxes[6:8]
                 ul = xy - wh / 2.0
                 br = xy + wh / 2.0
-                class_label = np.argmax(vec[class_offset:])
+                class_label = np.argmax(classes)
                 results.append({'class': class_index, 'ul': ul, 'br': br})
 
     return results
