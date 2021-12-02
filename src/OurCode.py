@@ -18,12 +18,8 @@ def ResizeFill(Img: np.ndarray, dim_out, ul, br) -> tuple:
     resized = cv2.resize(Img, (width, height))
 
     width, height = cv_size(resized)
-    assert width == wantedWidth
-    assert height <= wantedHeight
 
     bordersize = int((wantedHeight - height) / 2)
-
-    assert bordersize > 0
 
     resized = cv2.copyMakeBorder(
         resized,
@@ -34,16 +30,12 @@ def ResizeFill(Img: np.ndarray, dim_out, ul, br) -> tuple:
         borderType=cv2.BORDER_CONSTANT
     )
 
-    width, height = cv_size(resized)
-    assert width == height == wantedWidth
-
     new_bbox_x1 = ul[0] * m
     new_bbox_y1 = (ul[1] * m) + bordersize
     new_bbox_x2 = br[0] * m
     new_bbox_y2 = (br[1] * m) + bordersize
 
-    return resized, np.array([new_bbox_x1, new_bbox_y1], dtype=float), np.array([new_bbox_x2, new_bbox_y2],
-                                                                                dtype=float)
+    return resized, np.array([new_bbox_x1, new_bbox_y1], dtype=float), np.array([new_bbox_x2, new_bbox_y2], dtype=float)
 
 
 def resize_bbox(Img: np.ndarray, dim_out, ul, br):

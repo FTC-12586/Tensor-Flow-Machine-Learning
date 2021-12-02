@@ -4,6 +4,7 @@ import tensorflow as tf
 from tensorflow import keras
 
 from utils import read_label_map
+from OurCode import ResizeFill
 
 
 class DataGenerator(keras.utils.Sequence):
@@ -165,7 +166,7 @@ class DataGenerator(keras.utils.Sequence):
             image_resized, ul, br = self.ResizeCrop(image_full, self.image_dims, ul, br)
 
             # store image and label
-            images[ii,] = image_resized
-            labels[ii,] = self.convert_to_yolo_output(ul, br, label)
+            images[ii] = image_resized
+            labels[ii] = self.convert_to_yolo_output(ul, br, label)
 
         return images, labels
