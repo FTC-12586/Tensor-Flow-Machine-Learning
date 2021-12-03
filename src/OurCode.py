@@ -13,6 +13,7 @@ def ResizeFill(Img: np.ndarray, dim_out, ul, br) -> tuple:
     m = wantedWidth / width
     width = int(width * m)
     height = int(height * m)
+    newHeight = height
     if height % 2 != 0:
         height = height + 1
     resized = cv2.resize(Img, (width, height))
@@ -30,10 +31,10 @@ def ResizeFill(Img: np.ndarray, dim_out, ul, br) -> tuple:
         borderType=cv2.BORDER_CONSTANT
     )
     # TODO Fix the Bounding Boxes. They are incorrectly being recalculated
-    new_bbox_x1 = ul[0] * m
-    new_bbox_y1 = (ul[1] * m) + bordersize
-    new_bbox_x2 = br[0] * m
-    new_bbox_y2 = (br[1] * m) + bordersize
+    new_bbox_x1 = ul[0]
+    new_bbox_y1 = (bordersize + (ul[1]*newHeight))/wantedHeight
+    new_bbox_x2 = br[0]
+    new_bbox_y2 = (bordersize + (br[1]*newHeight))/wantedHeight
 
     return resized, np.array([new_bbox_x1, new_bbox_y1], dtype=float), np.array([new_bbox_x2, new_bbox_y2], dtype=float)
 
@@ -45,13 +46,12 @@ def resize_bbox(Img: np.ndarray, dim_out, ul, br):
 
     width, height = cv_size(Img)
 
-    m = wantedWidth / width
 
     bordersize = int((wantedHeight - height) / 2)
 
-    new_bbox_x1 = ul[0] * m
-    new_bbox_y1 = (ul[1] * m) + bordersize
-    new_bbox_x2 = br[0] * m
-    new_bbox_y2 = (br[1] * m) + bordersize
+    new_bbox_x1 = ul[0]
+    new_bbox_y1 = (bordersize + (ul[1]*height))/wantedHeight
+    new_bbox_x2 = br[0]
+    new_bbox_y2 = (bordersize + (br[1]*height))/wantedHeight
 
     return np.array([new_bbox_x1, new_bbox_y1], dtype=float), np.array([new_bbox_x2, new_bbox_y2], dtype=float)

@@ -24,6 +24,23 @@ class ImageManipulation(unittest.TestCase):
         self.assertEqual(type(data[-1]), type(data2[-1]))
         self.assertEqual(type(data[-2]), type(data2[-2]))
 
+    def testReturnedRange(self):
+        img = cv2.imread("download.jfif")
+        points = np.linspace(0, 1, 480, endpoint=False)
+        for k in range(0, len(points)):
+            i = points[k]
+            img1, ul, br = ResizeFill(img, [448, 448, 3], (i, i), (i, i))
+            self.assertEqual((ul[0] <= 1.0), True)
+            self.assertEqual((ul[0] >= 0), True)
+            self.assertEqual((ul[1] <= 1.0), True)
+            self.assertEqual((ul[1] >= 0), True)
+
+            self.assertEqual((br[0] <= 1.0), True)
+            self.assertEqual((br[0] >= 0), True)
+            self.assertEqual((br[1] <= 1.0), True)
+            self.assertEqual((br[1] >= 0), True)
+
+
 
 if __name__ == '__main__':
     unittest.main()
