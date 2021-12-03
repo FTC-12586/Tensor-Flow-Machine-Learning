@@ -83,7 +83,8 @@ class DataGenerator(keras.utils.Sequence):
         return ul, br, label
 
     # resize an image while maintaining aspect ratios
-    def ResizeCrop(self, img, dim_out, ul, br):
+    @staticmethod
+    def ResizeCrop(img, dim_out, ul, br):
         dim_img = img.shape
 
         ratio_height = dim_out[0] / dim_img[0]
@@ -163,10 +164,12 @@ class DataGenerator(keras.utils.Sequence):
             ul, br, label = self.load_record_label(parsed_data)
 
             # resize this to be 448, 448
+            # TODO Change the RsizeCrop to my ResizeFill
+            # Note, That causes errors other places
             image_resized, ul, br = self.ResizeCrop(image_full, self.image_dims, ul, br)
 
             # store image and label
-            images[ii] = image_resized
-            labels[ii] = self.convert_to_yolo_output(ul, br, label)
+            images[ii,] = image_resized
+            labels[ii,] = self.convert_to_yolo_output(ul, br, label)
 
         return images, labels
