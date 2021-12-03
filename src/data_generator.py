@@ -164,10 +164,11 @@ class DataGenerator(keras.utils.Sequence):
             ul, br, label = self.load_record_label(parsed_data)
 
             # resize this to be 448, 448
-            # TODO Change the RsizeCrop to my ResizeFill
+            # TODO Change the ResizeCrop to my ResizeFill
             # Note, That causes errors other places
-            image_resized, ul, br = self.ResizeCrop(image_full, self.image_dims, ul, br)
-
+            breakpoint()
+            #image_resized, ul, br = self.ResizeCrop(image_full, self.image_dims, ul, br)
+            image_resized, ul, br = ResizeFill(image_full, self.image_dims, ul, br)
             # store image and label
             images[ii,] = image_resized
             labels[ii,] = self.convert_to_yolo_output(ul, br, label)

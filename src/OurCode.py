@@ -29,7 +29,7 @@ def ResizeFill(Img: np.ndarray, dim_out, ul, br) -> tuple:
         right=0,
         borderType=cv2.BORDER_CONSTANT
     )
-
+    # TODO Fix the Bounding Boxes. They are incorrectly being recalculated
     new_bbox_x1 = ul[0] * m
     new_bbox_y1 = (ul[1] * m) + bordersize
     new_bbox_x2 = br[0] * m
@@ -39,6 +39,7 @@ def ResizeFill(Img: np.ndarray, dim_out, ul, br) -> tuple:
 
 
 def resize_bbox(Img: np.ndarray, dim_out, ul, br):
+    # TODO Fix the Bounding Boxes. They are incorrectly being recalculated
     wantedWidth = dim_out[0]
     wantedHeight = dim_out[1]
 
