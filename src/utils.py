@@ -1,6 +1,7 @@
 import cv2
 import numpy as np
 import tensorflow.keras.backend as K
+import tensorflow as tf
 
 
 # Convert pbtxt file into dictionary
@@ -30,7 +31,7 @@ def read_label_map(label_map_path):
 
 
 def DecodeYoloOutput(output, threshold=0.6):
-    if (len(output.shape) == 4):
+    if len(output.shape) == 4:
         # Get first element in output
         output = output[0]
     out_shape = output.shape
@@ -67,7 +68,7 @@ def DecodeYoloOutput(output, threshold=0.6):
                 wh = boxes[6:8]
                 ul = xy - wh / 2.0
                 br = xy + wh / 2.0
-                class_label = np.argmax(classes)
+                class_index = np.argmax(classes)
                 results.append({'class': class_index, 'ul': ul, 'br': br})
 
     return results
@@ -141,6 +142,7 @@ class YOLO_Loss:
         return box_xy, box_wh
 
     # Compute loss between output and true labels
+    @tf.autograph.experimental.do_not_convert
     def yolo_loss(self, y_true, y_pred):
         label_class = y_true[..., :self.num_classes]  # ? * 7 * 7 * 20
         label_box = y_true[..., self.num_classes:self.box_offset]  # ? * 7 * 7 * 4

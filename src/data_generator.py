@@ -166,8 +166,8 @@ class DataGenerator(keras.utils.Sequence):
             # resize this to be 448, 448
             # TODO Change the ResizeCrop to my ResizeFill
             # Note, That causes errors other places
-            breakpoint()
-            #image_resized, ul, br = self.ResizeCrop(image_full, self.image_dims, ul, br)
+            # breakpoint()
+            # image_resized, ul, br = self.ResizeCrop(image_full, self.image_dims, ul, br)
             image_resized, ul, br = ResizeFill(image_full, self.image_dims, ul, br)
             # store image and label
             images[ii,] = image_resized
